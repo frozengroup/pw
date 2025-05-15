@@ -2,20 +2,279 @@
 <html lang="fa">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>فرم ورود محصول | Frozen Group</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0d6efd">
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(() => console.log('✅ Service Worker registered'))
-        .catch(err => console.error('❌ SW failed', err));
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>فرم ورود اطلاعات محصول | Frozen Group</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+  <style>
+    html, body { height:100%; margin:0; padding:0; background:#f5f5f5; direction:rtl; font-size:16px; }
+    .wizard-step { display:none; }
+    .wizard-step.active { display:block; }
+    .progress { height:20px; }
+    .progress-bar { font-weight:bold; font-size:14px; }
+    .card { border-radius:0; height:100%; width:100%; box-shadow:none; }
+    .card-body { padding:20px; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
+    .logo { display:block; margin:0 auto 15px; max-width:120px; }
+    #userHeader { text-align:right; font-size:1.1rem; margin-bottom:1rem; }
+    #submissionCount { display:none; font-weight:bold; text-align:center; margin-bottom:1rem; color:#28a745; }
+    #summary { background:#eef; padding:10px; border-radius:5px; margin-bottom:1rem; }
+    @media (max-width:480px) {
+      html, body { font-size:18px!important; }
+      .card-body { padding:12px!important; }
+      .form-label { font-size:17px!important; }
+      input, select, button { font-size:18px!important; padding:10px!important; }
+      .progress-bar { font-size:14px!important; }
+      body { transform:scale(1.05); transform-origin:top center; }
     }
-  </script>
+    .wizard-step .btn { min-width:100px; }
+    .wizard-step .d-flex.justify-content-center { margin-top:1rem; }
+  </style>
 </head>
 <body>
-  <h1>برنامه PWA فرم محصول</h1>
-  <!-- فرم شما اینجا قرار می‌گیرد -->
+  <div class="w-100 h-100">
+    <div class="card">
+      <div class="card-body">
+        <a href="https://ibb.co/tPLhPTy2" target="_blank">
+          <img src="https://i.ibb.co/Z12J1pyg/Frozen-Logo-resized.jpg" alt="Frozen-Logo" class="logo" border="0">
+        </a>
+        <h4 class="mb-4 text-center fw-bold">
+          <i class="bi bi-clipboard-check"></i> فرم ورود اطلاعات محصول
+        </h4>
+
+        <div id="userHeader"></div>
+        <div id="submissionCount"></div>
+
+        <div class="progress mb-4">
+          <div id="progressBar" class="progress-bar bg-primary" style="width:25%">مرحله ۱ از ۴</div>
+        </div>
+
+        <!-- مرحله ۱ -->
+        <div class="wizard-step active" id="step1">
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-person"></i> کد یکتای کاربر</label>
+            <input type="text" id="userCode" class="form-control" required>
+            <div id="userInfo" class="form-text"></div>
+          </div>
+          <button class="btn btn-primary w-100" onclick="nextStep(1)">ادامه</button>
+        </div>
+
+        <!-- مرحله ۲ -->
+        <div class="wizard-step" id="step2">
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-box"></i> دسته‌بندی</label>
+            <select id="category" class="form-select" required>
+              <option value="">-- انتخاب کنید --</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-diagram-3"></i> زیرگروه</label>
+            <select id="subCategory" class="form-select" required>
+              <option value="">-- ابتدا دسته را انتخاب کنید --</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-tags"></i> برند</label>
+            <select id="brand" class="form-select" required>
+              <option value="">-- انتخاب کنید --</option>
+            </select>
+          </div>
+          <div class="d-flex justify-content-center gap-4 mt-3">
+            <button class="btn btn-secondary flex-fill" onclick="prevStep(2)">قبلی</button>
+            <button class="btn btn-primary flex-fill" onclick="nextStep(2)">ادامه</button>
+          </div>
+        </div>
+
+        <!-- مرحله ۳ -->
+        <div class="wizard-step" id="step3">
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-cash"></i> قیمت تولید (ریال)</label>
+            <input type="text" id="productPrice" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-currency-dollar"></i> قیمت مصرف‌کننده (ریال)</label>
+            <input type="text" id="consumerPrice" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-balance-scale"></i> وزن (گرم)</label>
+            <input type="text" id="weight" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-calendar-date"></i> تاریخ تولید </label>
+            <input type="text" id="productDate" class="form-control" placeholder="سال/ماه/روز" required>
+          </div>
+          <div class="d-flex justify-content-center gap-4 mt-3">
+            <button class="btn btn-secondary flex-fill" onclick="prevStep(3)">قبلی</button>
+            <button class="btn btn-primary flex-fill" onclick="nextStep(3)">ادامه</button>
+          </div>
+        </div>
+
+        <!-- مرحله ۴ -->
+        <div class="wizard-step" id="step4">
+          <h5 class="mb-3 text-center">بررسی نهایی و ثبت</h5>
+          <div id="summary"></div>
+          <p class="text-muted text-center">در صورت تأیید، روی ثبت نهایی کلیک کنید.</p>
+          <div class="d-flex justify-content-center gap-4 mt-3">
+            <button class="btn btn-secondary flex-fill" onclick="prevStep(4)">قبلی</button>
+            <button class="btn btn-success flex-fill" id="submitBtn">ثبت نهایی</button>
+          </div>
+          <p id="status" class="mt-3 text-center"></p>
+        </div>
+
+        <audio id="successSound">
+          <source src="https://myringtone.ir/download/MyRingtone.IR_1565443095_1095.mp3" type="audio/mpeg">
+          مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+        </audio>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $('#productDate').persianDatepicker({ format: 'YYYY/MM/DD', autoClose: true, initialValue: false });
+
+    function formatThousandsInput(el) {
+      let val = el.value.replace(/,/g, '').replace(/[^\d]/g, '');
+      if (!val) {
+        el.value = '';
+        return;
+      }
+      el.value = Number(val).toLocaleString('en-US');
+    }
+
+    ['productPrice', 'consumerPrice', 'weight'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function () {
+        formatThousandsInput(this);
+      });
+    });
+    
+    let userFullName = '', userRole = '';
+    const steps = ['step1', 'step2', 'step3', 'step4'];
+
+    function showStep(i) {
+      steps.forEach((id, j) => document.getElementById(id).classList.toggle('active', i === j));
+      document.getElementById('progressBar').style.width = ((i + 1) / steps.length * 100) + '%';
+      document.getElementById('progressBar').textContent = `مرحله ${i + 1} از ${steps.length}`;
+      if (i === 3) buildSummary();
+    }
+
+    function nextStep(cur) {
+      const els = document.querySelectorAll(`#${steps[cur - 1]} input, #${steps[cur - 1]} select`);
+      for (let e of els) if (e.required && !e.value.trim()) { alert('لطفاً همه‌ی فیلدهای الزامی را پر کنید.'); return; }
+
+      if (cur === 1) {
+        const code = document.getElementById('userCode').value.trim();
+        google.script.run.withSuccessHandler(res => {
+          if (res.found) {
+            userFullName = res.fullName; userRole = res.role;
+            document.getElementById('userHeader').innerText = `کاربر: ${res.fullName} | ${res.role}`;
+            showStep(cur); loadStep2();
+          } else {
+            document.getElementById('userInfo').innerHTML = `<span class="text-danger">❌ کد کاربر معتبر نیست.</span>`;
+          }
+        }).getUserInfo(code);
+        return;
+      }
+      showStep(cur);
+    }
+
+    function prevStep(cur) { showStep(cur - 2); }
+
+    function loadStep2() {
+      google.script.run.withSuccessHandler(list => {
+        const cat = document.getElementById('category');
+        cat.innerHTML = '<option value="">-- انتخاب کنید --</option>';
+        list.forEach(c => cat.append(new Option(c.name, c.id)));
+      }).getCategories();
+
+      google.script.run.withSuccessHandler(list => {
+        const br = document.getElementById('brand');
+        br.innerHTML = '<option value="">-- انتخاب کنید --</option>';
+        list.forEach(b => br.append(new Option(b.name, b.id)));
+      }).getBrands();
+    }
+
+    document.getElementById('category').addEventListener('change', function () {
+      const cid = this.value;
+      const sub = document.getElementById('subCategory');
+      sub.innerHTML = '<option value="">-- انتخاب کنید --</option>';
+      if (!cid) return;
+      google.script.run.withSuccessHandler(list => {
+        list.forEach(s => sub.append(new Option(s.name, s.id)));
+      }).getSubCategories(cid);
+    });
+
+    function buildSummary() {
+      const d = {
+        userCode: document.getElementById('userCode').value,
+        category: document.querySelector('#category option:checked').text,
+        subCategory: document.querySelector('#subCategory option:checked').text,
+        brand: document.querySelector('#brand option:checked').text,
+        productPrice: formatNumber(document.getElementById('productPrice').value),
+        consumerPrice: formatNumber(document.getElementById('consumerPrice').value),
+        weight: document.getElementById('weight').value,
+        productDate: document.getElementById('productDate').value
+      };
+      document.getElementById('summary').innerHTML = `
+        <ul class="list-group">
+          <li class="list-group-item"><strong>کاربر:</strong> ${d.userCode} – ${userFullName} (${userRole})</li>
+          <li class="list-group-item"><strong>دسته‌بندی:</strong> ${d.category}</li>
+          <li class="list-group-item"><strong>زیرگروه:</strong> ${d.subCategory}</li>
+          <li class="list-group-item"><strong>برند:</strong> ${d.brand}</li>
+          <li class="list-group-item"><strong>قیمت تولید:</strong> ${d.productPrice} ریال</li>
+          <li class="list-group-item"><strong>قیمت مصرف‌کننده:</strong> ${d.consumerPrice} ریال</li>
+          <li class="list-group-item"><strong>وزن:</strong> ${d.weight} گرم</li>
+          <li class="list-group-item"><strong>تاریخ:</strong> ${d.productDate}</li>
+        </ul>`;
+    }
+
+    function formatNumber(val) {
+      const n = Number(val.toString().replace(/[^0-9]/g, ''));
+      return isNaN(n) ? '' : n.toLocaleString('en-US');
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const data = {
+        userCode: document.getElementById('userCode').value,
+        category: document.getElementById('category').value,
+        subCategory: document.getElementById('subCategory').value,
+        brand: document.getElementById('brand').value,
+        productPrice: document.getElementById('productPrice').value.replace(/,/g, ''),
+        consumerPrice: document.getElementById('consumerPrice').value.replace(/,/g, ''),
+        weight: document.getElementById('weight').value,
+        productDate: document.getElementById('productDate').value
+      };
+
+      google.script.run.withSuccessHandler(res => {
+        const st = document.getElementById('status');
+        st.className = 'mt-3 text-center ' + (res.message.startsWith('✅') ? 'text-success' : 'text-danger');
+        st.innerText = res.message;
+
+        if (res.message.startsWith('✅')) {
+          document.getElementById('successSound').play();
+          document.getElementById('submissionCount').innerText = `شما تاکنون ${res.count} ثبت موفق انجام داده‌اید.`;
+          document.getElementById('submissionCount').style.display = 'block';
+
+          // پاکسازی فرم به جز کد کاربر
+          document.getElementById('category').value = '';
+          document.getElementById('subCategory').innerHTML = '<option value="">-- ابتدا دسته را انتخاب کنید --</option>';
+          document.getElementById('brand').value = '';
+          document.getElementById('productPrice').value = '';
+          document.getElementById('consumerPrice').value = '';
+          document.getElementById('weight').value = '';
+          document.getElementById('productDate').value = '';
+          document.getElementById('status').innerText = '';
+
+          setTimeout(() => {
+            document.getElementById('submissionCount').style.display = 'none';
+            showStep(1);
+            loadStep2();
+          }, 3000);
+        }
+      }).submitForm(data);
+    });
+  </script>
 </body>
 </html>
